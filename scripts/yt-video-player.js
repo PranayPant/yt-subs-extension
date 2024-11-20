@@ -12,12 +12,12 @@ function handleTimeUpdate(time) {
 chrome.webNavigation.onCompleted.addListener(
   async function (details) {
     console.log("loaded", details);
-    video = await waitForElement("video.html5-main-video");
-    if (!video) {
+    const videoContainer = document.querySelector("div.html5-video-player");
+    if (!videoContainer) {
       throw new Error("No video element found!");
     }
-    console.log("Video", video);
-    video.addEventListener("timeupdate", throttle(handleTimeUpdate, 500));
+    console.log("Video container", videoContainer);
+    //video.addEventListener("timeupdate", throttle(handleTimeUpdate, 500));
   },
   {
     url: [
