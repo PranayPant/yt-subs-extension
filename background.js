@@ -26,20 +26,19 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 chrome.action.onClicked.addListener(async (tab) => {
-  console.log(tab.url);
-  if (tab.url.startsWith(youtubeVideoPageUrl)) {
-    // Retrieve the action badge to check if the extension is 'ON' or 'OFF'
-    const prevState = await chrome.action.getBadgeText({ tabId: tab.id });
-    // Next state will always be the opposite
-    const nextState = prevState === "ON" ? "OFF" : "ON";
+  console.log("HELLO");
+  const prevState = await chrome.action.getBadgeText({ tabId: tab.id });
+  // Next state will always be the opposite
+  const nextState = prevState === "ON" ? "OFF" : "ON";
 
-    // Set the action badge to the next state
-    await chrome.action.setBadgeText({
-      tabId: tab.id,
-      text: nextState,
-    });
+  // Set the action badge to the next state
+  await chrome.action.setBadgeText({
+    tabId: tab.id,
+    text: nextState,
+  });
 
-    // Run the code
-    main();
-  }
+  // Send a message to the active tab
+
+  // Run the code
+  main();
 });
