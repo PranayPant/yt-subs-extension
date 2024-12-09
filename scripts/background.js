@@ -15,6 +15,6 @@ function main() {
 }
 
 chrome.runtime.onInstalled.addListener(async ({ tabId }) => {
-  log("New Active Tab");
+  log("service worker loaded");
   await chrome.action.setPopup({ popup: "popup.html", tabId });
 });
