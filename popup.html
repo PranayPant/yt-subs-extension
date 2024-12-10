@@ -1,8 +1,20 @@
 <html>
   <script defer src="./scripts/popup.js"></script>
+  <style>
+    div.button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      width: 300px;
+    }
+  </style>
   <body>
     <h1>Hello Extensions</h1>
-    <button id="downloadsubs">Download subtitles</button>
-    <button id="copysubtitles">Copy subtitles</button>
+    <div class="button-row">
+      <button id="downloadsubs">Download subtitles</button>
+      <button id="copysubtitles">Copy subtitles</button>
+      <button id="testcache">Test cache</button>
+      <button id="testparse">Test parse</button>
+    </div>
   </body>
 </html>

@@ -1,6 +1,19 @@
 let port = null;
 let currentTab = null;
 let subtitles = "";
+const downloadButton = document.getElementById("downloadsubs");
+const copySubButton = document.getElementById("copysubtitles");
+const testCacheButton = document.getElementById("testcache");
+const testParseButton = document.getElementById("testparse");
+
+function sendMessageToHost(event, data) {
+  if (port) {
+    port.postMessage({
+      event,
+      data,
+    });
+  }
+}
 
 async function init() {
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -9,28 +22,30 @@ async function init() {
 
   port.onMessage.addListener(function (message) {
     if (message.event === "subtitle") {
-      showSubtitles(message.data);
       port.postMessage({ hostResponse: "ok from popup - subtitle" });
     }
 
     console.log(`[yt-dlp extension]: Message from client ${message.data}`);
   });
 
-  document
-    .getElementById("downloadsubs")
-    .addEventListener("click", handleDownloadSubtitles);
-  document
-    .getElementById("copysubtitles")
-    .addEventListener("click", handleCopySubtitles);
+  testParseButton.addEventListener("click", handleTestParse);
+  testCacheButton.addEventListener("click", handleTestCache);
+  downloadButton.addEventListener("click", handleDownloadSubtitles);
+  copySubButton.addEventListener("click", handleCopySubtitles);
+}
+
+function handleTestParse() {
+  console.log(`[yt-dlp extension]: Sending test message to client`);
+  sendMessageToHost("test-parse", "test parse");
+}
+
+function handleTestCache() {
+  console.log(`[yt-dlp extension]: Sending test message to client`);
+  sendMessageToHost("test-cache", "test cache");
 }
 
 function handleCopySubtitles() {
-  if (port) {
-    port.postMessage({
-      event: "subtitles_content_copy",
-      data: subtitles,
-    });
-  }
+  sendMessageToHost("subtitles-copy", "Copy subtitles");
 }
 
 async function handleDownloadSubtitles() {
@@ -49,13 +64,13 @@ async function handleDownloadSubtitles() {
   let data = null;
   if (currentTab) {
     document.getElementById("downloadsubs").textContent = "Downloading...";
-    document.getElementById("downloadsubs").disable = true;
+    document.getElementById("downloadsubs").disabled = "true";
     const response = await fetch(
       `http://localhost:8080/sub?url=${currentTab.url}`
     );
     data = await response.text();
     document.getElementById("downloadsubs").textContent = "Download subtitles";
-    document.getElementById("downloadsubs").disable = false;
+    document.getElementById("downloadsubs").disabled = null;
     console.log("[ytdlp-extension]: Done downloading subtitles!");
   }
 

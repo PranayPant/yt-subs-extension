@@ -7,7 +7,7 @@
   "host_permissions": ["http://localhost/*"],
   "content_scripts": [
     {
-      "js": ["./scripts/host.js"],
+      "js": ["./scripts/host/main.js"],
       "matches": ["https://www.youtube.com/watch?v=*"]
     }
   ],
