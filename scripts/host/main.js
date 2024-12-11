@@ -63,15 +63,16 @@ chrome.runtime.onConnect.addListener(function (port) {
     await handleExtensionMessage(message, port);
   });
   const video = document.querySelector("video");
-  video.addEventListener("timeupdate", throttle(handleVideoTimeUpdate, 500));
-});
-
-function handleVideoTimeUpdate(event) {
-  console.log(
-    "The currentTime attribute has been updated. Again.",
-    event.timeStamp
+  video.addEventListener(
+    "timeupdate",
+    throttle(() => {
+      console.log(
+        "The currentTime attribute has been updated, it's now at",
+        video.currentTime
+      );
+    }, 500)
   );
-}
+});
 
 function throttle(func, delay = 100) {
   let inThrottle = false;
