@@ -22,6 +22,10 @@ async function handleClientMessage(message) {
       subtitles = message.data;
       break;
     }
+    case "subtitle-parsed-data": {
+      console.log(`[yt-dlp extension]:Parsed subtitle data ${JSON.stringify(message.data)}`);
+      break;
+    }
     default:
       break;
   }

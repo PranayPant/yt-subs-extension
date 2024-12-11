@@ -1,24 +1,15 @@
 console.log("[yt-dlp extension]: Loaded content script.");
 
 function parseTTML(ttmlString) {
-  console.log(ttmlString.length);
-
-  const parser = new DOMParser();
-  const xmlDoc = parser.parseFromString(ttmlString, "text/xml");
-
-  // Now you can traverse the XML document
+  const lines = ttmlString.split("\\n");
   const subtitles = [];
-  const paragraphs = xmlDoc.querySelectorAll("p");
-  console.log("[yt-dlp extension]: Paragraphs", paragraphs);
+  const regex = /<p begin=\\\"(.*)\\\"\s+end=\\\"(.*)\\\"\s+.*>(.*)<\/p>/;
 
-  paragraphs.forEach((p) => {
-    const start = p.getAttribute("begin");
-    console.log("start", start);
-    const end = p.getAttribute("end");
-    const text = p.textContent;
-
-    subtitles.push({ start, end, text });
-  });
+  for (const line of lines) {
+    if (!line.startsWith("<p")) continue;
+    const [, begin, end, text] = line.match(regex);
+    subtitles.push({ begin, end, text });
+  }
 
   return subtitles;
 }
@@ -45,12 +36,8 @@ async function handleExtensionMessage(message, port) {
     }
     case "test-parse": {
       const data = await getCacheData();
-      let subtitles = [];
-      try {
-        subtitles = parseTTML(data);
-      } catch (err) {
-        console.error("Error parsing", err);
-      }
+      const subtitlesData = parseTTML(data);
+      port.postMessage({ event: "subtitle-parsed-data", data: subtitlesData });
       break;
     }
     default:
