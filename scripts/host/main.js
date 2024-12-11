@@ -36,11 +36,11 @@ async function getCacheData() {
   return await (await caches.match(url)).text();
 }
 
-async function handleExtensionMessage(message) {
+async function handleExtensionMessage(message, port) {
   switch (message.event) {
     case "test-cache": {
       const data = await getCacheData();
-      console.log(`[yt-dlp extension]: Cached data ${data}`);
+      port.postMessage({ event: "subtitle-cache-full", data });
       break;
     }
     case "test-parse": {
@@ -51,12 +51,6 @@ async function handleExtensionMessage(message) {
       } catch (err) {
         console.error("Error parsing", err);
       }
-      break;
-    }
-    case "subtitles-copy": {
-      const data = await getCacheData();
-      document.body.focus();
-      await navigator.clipboard.writeText(data);
       break;
     }
     default:
@@ -79,6 +73,6 @@ chrome.runtime.onConnect.addListener(function (port) {
   );
   port.onMessage.addListener(async function (message) {
     console.log("[yt-dlp extension]: Message from extension:", message.data);
-    await handleExtensionMessage(message);
+    await handleExtensionMessage(message, port);
   });
 });

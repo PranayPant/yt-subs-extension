@@ -15,18 +15,26 @@ function sendMessageToHost(event, data) {
   }
 }
 
+async function handleClientMessage(message) {
+  switch (message.event) {
+    case "subtitle-cache-full": {
+      copySubButton.disabled = false;
+      subtitles = message.data;
+      break;
+    }
+    default:
+      break;
+  }
+}
+
 async function init() {
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
   currentTab = tabs[0];
   port = chrome.tabs.connect(currentTab.id, { name: "subs" });
 
-  port.onMessage.addListener(function (message) {
-    if (message.event === "subtitle") {
-      port.postMessage({ hostResponse: "ok from popup - subtitle" });
-    }
+  port.onMessage.addListener(handleClientMessage);
 
-    console.log(`[yt-dlp extension]: Message from client ${message.data}`);
-  });
+  copySubButton.disabled = true;
 
   testParseButton.addEventListener("click", handleTestParse);
   testCacheButton.addEventListener("click", handleTestCache);
@@ -44,8 +52,9 @@ function handleTestCache() {
   sendMessageToHost("test-cache", "test cache");
 }
 
-function handleCopySubtitles() {
-  sendMessageToHost("subtitles-copy", "Copy subtitles");
+async function handleCopySubtitles() {
+  await navigator.clipboard.writeText(subtitles);
+  console.log(`[yt-dlp extension]: Copied to clipboard ${subtitles}`);
 }
 
 async function handleDownloadSubtitles() {
