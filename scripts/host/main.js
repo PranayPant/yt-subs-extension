@@ -62,4 +62,25 @@ chrome.runtime.onConnect.addListener(function (port) {
     console.log("[yt-dlp extension]: Message from extension:", message.data);
     await handleExtensionMessage(message, port);
   });
+  const video = document.querySelector("video");
+  video.addEventListener("timeupdate", throttle(handleVideoTimeUpdate, 500));
 });
+
+function handleVideoTimeUpdate(event) {
+  console.log(
+    "The currentTime attribute has been updated. Again.",
+    event.timeStamp
+  );
+}
+
+function throttle(func, delay = 100) {
+  let inThrottle = false;
+
+  return function () {
+    if (!inThrottle) {
+      func.apply(this, arguments);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), delay);
+    }
+  };
+}
