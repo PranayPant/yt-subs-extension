@@ -1,31 +1,9 @@
-console.log("[yt-dlp extension]: Loaded content script.");
+log("Loaded content script.");
 
-function parseTTML(ttmlString) {
-  const lines = ttmlString.split("\\n");
-  const subtitles = [];
-  const regex = /<p begin=\\\"(.*)\\\"\s+end=\\\"(.*)\\\"\s+.*>(.*)<\/p>/;
-
-  for (const line of lines) {
-    if (!line.startsWith("<p")) continue;
-    const [, begin, end, text] = line.match(regex);
-    subtitles.push({ begin, end, text });
-  }
-
-  return subtitles;
-}
-
-// Try to get data from the cache, but fall back to fetching it live.
-async function getCacheData() {
-  const cacheVersion = 1;
-  const cacheName = `yt-dlp-subs-${cacheVersion}`;
-  const url = `http://localhost:8080/sub?url=${window.location.href}`;
-  const cachedResponse = await caches.match(url);
-  if (cachedResponse) {
-    return await cachedResponse.text();
-  }
-  await (await caches.open(cacheName)).add(url);
-  return await (await caches.match(url)).text();
-}
+let subtitlesData = [];
+let lastIndex;
+let lastBeginSeconds = 0;
+let lastEndSeconds = 0;
 
 async function handleExtensionMessage(message, port) {
   switch (message.event) {
@@ -36,7 +14,7 @@ async function handleExtensionMessage(message, port) {
     }
     case "test-parse": {
       const data = await getCacheData();
-      const subtitlesData = parseTTML(data);
+      subtitlesData = parseTTML(data);
       port.postMessage({ event: "subtitle-parsed-data", data: subtitlesData });
       break;
     }
@@ -45,43 +23,41 @@ async function handleExtensionMessage(message, port) {
   }
 }
 
-function showSubtitles(subtitleText) {
-  const video = document.querySelector("div.html5-video-player");
-  const subtitleDiv = document.createElement("div");
-  subtitleDiv.style =
-    "background-color:lightgreen;position:absolute;bottom:0;left:0;z-index:999";
-  subtitleDiv.textContent = subtitleText;
-  video.appendChild(subtitleDiv);
+function getSubtitlesForTime(currentTime) {
+  let currentIndex, beginSeconds, endSeconds, text;
+
+  currentIndex = isNaN(lastIndex)
+    ? 0
+    : getNextIndex(lastIndex, subtitlesData, currentTime);
+  ({ beginSeconds, endSeconds, text } = subtitlesData[currentIndex]);
+  lastIndex = currentIndex;
+  lastBeginSeconds = beginSeconds;
+  lastEndSeconds = endSeconds;
+  log(text, beginSeconds, endSeconds);
+
+  return text;
 }
 
 chrome.runtime.onConnect.addListener(function (port) {
-  console.log(
-    "[yt-dlp extension]: Connected to extension, ready to receive messages."
-  );
-  port.onMessage.addListener(async function (message) {
-    console.log("[yt-dlp extension]: Message from extension:", message.data);
-    await handleExtensionMessage(message, port);
-  });
-  const video = document.querySelector("video");
-  video.addEventListener(
-    "timeupdate",
-    throttle(() => {
-      console.log(
-        "The currentTime attribute has been updated, it's now at",
-        video.currentTime
-      );
-    }, 500)
-  );
+  try {
+    log("Connected to extension, ready to receive messages.");
+    port.onMessage.addListener(async function (message) {
+      log("Message from extension:", message.data);
+      await handleExtensionMessage(message, port);
+    });
+    const video = document.querySelector("video");
+    video.addEventListener(
+      "timeupdate",
+      throttle(() => {
+        if (!subtitlesData?.length) return;
+        if (video.currentTime > lastEndSeconds) {
+          log("***Getting subtitles for time***", video.currentTime);
+          const text = getSubtitlesForTime(video.currentTime);
+          showSubtitles(text);
+        }
+      }, 1000)
+    );
+  } catch (err) {
+    log("Error:", err);
+  }
 });
-
-function throttle(func, delay = 100) {
-  let inThrottle = false;
-
-  return function () {
-    if (!inThrottle) {
-      func.apply(this, arguments);
-      inThrottle = true;
-      setTimeout(() => (inThrottle = false), delay);
-    }
-  };
-}
