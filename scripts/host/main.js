@@ -7,15 +7,15 @@ let lastEndSeconds = 0;
 
 async function handleExtensionMessage(message, port) {
   switch (message.event) {
-    case "test-cache": {
-      const data = await getCacheData();
-      port.postMessage({ event: "subtitle-cache-full", data });
-      break;
-    }
-    case "test-parse": {
-      const data = await getCacheData();
-      subtitlesData = parseTTML(data);
-      port.postMessage({ event: "subtitle-parsed-data", data: subtitlesData });
+    case "generate-subs": {
+      try {
+        port.postMessage({ event: "generate-subs-loading" });
+        const data = await getCacheData();
+        subtitlesData = parseTTML(data);
+        port.postMessage({ event: "generate-subs-success", data });
+      } catch (err) {
+        port.postMessage({ event: "generate-subs-error", err });
+      }
       break;
     }
     default:
@@ -25,8 +25,6 @@ async function handleExtensionMessage(message, port) {
 
 function getSubtitlesForTime(currentTime) {
   let lines = [];
-
-  log("Last Index -- Start", lastIndex);
 
   for (
     let currentIndex = lastIndex;
@@ -41,13 +39,6 @@ function getSubtitlesForTime(currentTime) {
       lastIndex = currentIndex;
     }
   }
-
-  log(
-    lastIndex,
-    lines,
-    subtitlesData[lastIndex].beginSeconds,
-    subtitlesData[lastIndex].endSeconds
-  );
 
   return lines.join("\n");
 }
@@ -65,7 +56,6 @@ chrome.runtime.onConnect.addListener(function (port) {
       throttle(() => {
         if (!subtitlesData?.length) return;
         if (video.currentTime > lastEndSeconds) {
-          log("***Getting subtitles for time***", video.currentTime);
           const text = getSubtitlesForTime(video.currentTime);
           showSubtitles(text);
         }

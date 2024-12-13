@@ -7,14 +7,31 @@
       gap: 4px;
       width: 300px;
     }
+    div.button-row > button {
+      display: flex;
+      gap: 4px;
+      background-color: unset;
+      border: 1px solid black;
+      outline: unset;
+      &:hover {
+        cursor: pointer;
+      }
+      img {
+        width: 20px;
+      }
+    }
   </style>
   <body>
     <h1>Hello Extensions</h1>
     <div class="button-row">
       <button id="downloadsubs">Download subtitles</button>
-      <button id="copysubtitles">Copy subtitles</button>
-      <button id="testcache">Test cache</button>
-      <button id="testparse">Test parse</button>
+      <button id="generatesubs">
+        <img
+          class="loading"
+          id="generatesubs-loading"
+          src="/images/loading-icon.png"
+        /><span>Generate subtitles</span>
+      </button>
     </div>
   </body>
 </html>

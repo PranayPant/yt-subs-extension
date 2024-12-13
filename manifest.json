@@ -3,8 +3,14 @@
   "description": "Base Level Extension",
   "version": "1.0",
   "manifest_version": 3,
-  "permissions": ["activeTab", "tabs", "scripting", "clipboardWrite"],
-  "host_permissions": ["http://localhost/*"],
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "scripting",
+    "clipboardWrite",
+    "downloads"
+  ],
+  "host_permissions": ["http://localhost/*", "http://70.119.105.92/*"],
   "content_scripts": [
     {
       "js": [
