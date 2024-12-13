@@ -1,7 +1,7 @@
 log("Loaded content script.");
 
 let subtitlesData = [];
-let lastIndex;
+let lastIndex = 0;
 let lastBeginSeconds = 0;
 let lastEndSeconds = 0;
 
@@ -24,18 +24,32 @@ async function handleExtensionMessage(message, port) {
 }
 
 function getSubtitlesForTime(currentTime) {
-  let currentIndex, beginSeconds, endSeconds, text;
+  let lines = [];
 
-  currentIndex = isNaN(lastIndex)
-    ? 0
-    : getNextIndex(lastIndex, subtitlesData, currentTime);
-  ({ beginSeconds, endSeconds, text } = subtitlesData[currentIndex]);
-  lastIndex = currentIndex;
-  lastBeginSeconds = beginSeconds;
-  lastEndSeconds = endSeconds;
-  log(text, beginSeconds, endSeconds);
+  log("Last Index -- Start", lastIndex);
 
-  return text;
+  for (
+    let currentIndex = lastIndex;
+    currentIndex < subtitlesData.length;
+    currentIndex += 1
+  ) {
+    const { text, beginSeconds, endSeconds } = subtitlesData[currentIndex];
+    if (lines.length && currentTime > endSeconds) {
+      break;
+    } else if (currentTime >= beginSeconds && currentTime <= endSeconds) {
+      lines.push(text);
+      lastIndex = currentIndex;
+    }
+  }
+
+  log(
+    lastIndex,
+    lines,
+    subtitlesData[lastIndex].beginSeconds,
+    subtitlesData[lastIndex].endSeconds
+  );
+
+  return lines.join("\n");
 }
 
 chrome.runtime.onConnect.addListener(function (port) {

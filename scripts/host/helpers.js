@@ -12,7 +12,7 @@ const observer = new MutationObserver(() => {
 });
 
 function getCSS({ margin }) {
-  return `background-color:black;position:absolute;bottom:30px;left:${margin}px;z-index:999;font-size:3em`;
+  return `background-color:black;position:absolute;bottom:50px;left:${margin}px;z-index:999;font-size:3em;max-width:700px`;
 }
 
 function showSubtitles(subtitleText) {
@@ -21,7 +21,7 @@ function showSubtitles(subtitleText) {
 
   if (targetDiv) {
     observer.disconnect();
-    targetDiv.textContent = subtitleText;
+    targetDiv.innerHTML = subtitleText;
     const margin = (video.offsetWidth - targetDiv.offsetWidth) / 2;
     targetDiv.style = getCSS({ margin });
   } else {
@@ -30,7 +30,7 @@ function showSubtitles(subtitleText) {
     });
     targetDiv = document.createElement("div");
     targetDiv.id = SUBTITLE_DIV_ID;
-    targetDiv.textContent = subtitleText;
+    targetDiv.innerHTML = subtitleText;
     video.appendChild(targetDiv);
     const margin =
       (video.offsetWidth -

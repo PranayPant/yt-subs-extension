@@ -20,11 +20,24 @@ function parseTTML(ttmlString) {
   return subtitles;
 }
 
-function getNextIndex(currentIndex, subtitlesData, currentTime) {
-  if (currentTime <= subtitlesData[currentIndex].endSeconds) {
+function getNextLines(lastIndex, subtitlesData, currentTime) {
+  if (!isNaN(lastIndex) && currentTime <= subtitlesData[lastIndex].endSeconds) {
     return currentIndex;
   }
-  return (currentIndex + 1) % subtitlesData.length;
+
+  let lines = []
+
+  for(let iteration = 0; iteration < subtitlesData.length ; iteration += 1){
+    const {text, beginSeconds, endSeconds} = subtitlesData[lastIndex]
+    if(currentTime >= beginSeconds && currentTime <= endSeconds){
+        lines.push(text)
+    }
+    else {
+        break
+    }
+  }
+
+  return lines;
 }
 
 function timeStringToSeconds(timeString) {
