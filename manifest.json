@@ -1,6 +1,6 @@
 {
-  "name": "Hello Extensions",
-  "description": "Base Level Extension",
+  "name": "YT Subs",
+  "description": "Generate subs for videos",
   "version": "1.0",
   "manifest_version": 3,
   "permissions": [
