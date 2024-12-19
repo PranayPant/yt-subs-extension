@@ -5,6 +5,10 @@ let subtitles = "";
 const downloadButton = document.getElementById("downloadsubs");
 const generateSubsButton = document.getElementById("generatesubs");
 
+function sanitizeFilename(filename) {
+  return filename.replace(/[<>:"/\\|?*]+/g, "_");
+}
+
 function sendMessageToHost(event, data) {
   if (port) {
     port.postMessage({
@@ -63,36 +67,28 @@ function handleGenerateSubs() {
 
 async function handleDownloadSubtitles() {
   console.log("[ytdlp-extension]: Downloading subtitles...");
-  // window.postMessage(
-  //   { type: "FROM_PAGE", text: "Hello from the extension!" },
-  //   "*"
-  // );
-  // popup.js
 
-  // Get a reference to the active tab
-  // chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-  //   // Send a message to the content script in the active tab
-  //   chrome.tabs.sendMessage(tabs[0].id, { data: "Hello from popup!" });
-  // });
-  // let data = null;
-  // if (currentTab) {
-  //   document.getElementById("downloadsubs").textContent = "Downloading...";
-  //   document.getElementById("downloadsubs").disabled = "true";
-  //   const response = await fetch(
-  //     `http://localhost:8080/sub?url=${currentTab.url}`
-  //   );
-  //   data = await response.text();
-  //   document.getElementById("downloadsubs").textContent = "Download subtitles";
-  //   document.getElementById("downloadsubs").disabled = null;
-  //   console.log("[ytdlp-extension]: Done downloading subtitles!");
-  // }
+  const sanitizedFilename = sanitizeFilename(
+    `subtitles_${new Date().toISOString()}.ttml`
+  );
 
-  // if (port) {
-  //   port.postMessage({ event: "subtitles_downloaded", data });
-  // }
-  chrome.downloads.download({
-    url: `http://localhost:8080/sub?url=${currentTab.url}`,
-  });
+  chrome.downloads.download(
+    {
+      url: `http://localhost:8080/sub?url=${currentTab.url}`,
+      filename: sanitizedFilename,
+      saveAs: true,
+    },
+    function (downloadId) {
+      if (chrome.runtime.lastError) {
+        console.error(
+          "[ytdlp-extension]: Download failed:",
+          (chrome.runtime.lastError.message || "Unknown error").toString()
+        );
+      } else {
+        console.log("[ytdlp-extension]: Download started with ID:", downloadId);
+      }
+    }
+  );
 }
 
 init();
