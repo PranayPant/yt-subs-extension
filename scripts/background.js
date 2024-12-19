@@ -1,4 +1,4 @@
-import { handleTimeUpdate, throttle, executePopupScript } from "./utils.js";
+import { handleTimeUpdate, throttle } from "./utils.js";
 import { log } from "./log.js";
 let video = null;
 let currentTime = null;

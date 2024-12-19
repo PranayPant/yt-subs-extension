@@ -3,14 +3,8 @@
   "description": "Generate subs for videos",
   "version": "1.0",
   "manifest_version": 3,
-  "permissions": [
-    "activeTab",
-    "tabs",
-    "scripting",
-    "clipboardWrite",
-    "downloads"
-  ],
-  "host_permissions": ["http://localhost/*", "http://70.119.105.92/*"],
+  "permissions": ["activeTab", "tabs", "clipboardWrite", "downloads"],
+  "host_permissions": ["http://localhost/*"],
   "content_scripts": [
     {
       "js": [
